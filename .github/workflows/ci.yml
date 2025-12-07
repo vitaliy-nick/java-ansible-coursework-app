@@ -1,0 +1,54 @@
+name: CI/CD Java (Maven) with Ansible
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      JAVA_VERSION: '17'
+      APP_JAR_NAME: 'java-app-0.0.1-SNAPSHOT.jar'
+      TARGET_HOST: '192.168.49.1'
+      TARGET_USER: 'ubuntu'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven (CI Stage: створення JAR)
+        run: mvn -B package --file pom.xml -DskipTests
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Configure SSH private key (для доступу до VM)
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run Ansible Deploy (CD Stage: розгортання)
+        run: |
+          # 1. Створення інвенторі-файлу динамічно
+          echo "[web]" > inventory
+          echo "${{ env.TARGET_HOST }} ansible_user=${{ env.TARGET_USER }}" >> inventory
+
+          # 2. Копіювання Playbook та шаблонів у робочий каталог
+          mkdir ansible_temp
+          cp -r ansible/templates ./ansible_temp/templates
+          cp ansible/deploy.yml ./ansible_temp/deploy.yml
+
+          # 3. Запуск Playbook з передачею назви JAR-файлу як змінної
+          ansible-playbook \
+          -i inventory \
+          ansible_temp/deploy.yml \
+          --extra-vars "app_jar_name=${{ env.APP_JAR_NAME }}"

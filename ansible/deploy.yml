@@ -1,0 +1,96 @@
+---
+- name: Deploy Java Application with Ansible and Nginx
+  hosts: web
+  become: true
+  vars:
+    app_dir: /opt/java-app
+    # Артефакт JAR буде передано через --extra-vars з GitHub Actions
+    app_jar_name: "{{ app_jar_name }}"
+    nginx_conf_path: /etc/nginx/sites-available/java-app.conf
+    nginx_link_path: /etc/nginx/sites-enabled/java-app.conf
+
+  tasks:
+    # 1. Встановлення OpenJDK (якщо ще не встановлено)
+    - name: Ensure OpenJDK 17 is installed
+      ansible.builtin.apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    # 2. Створення каталогу для застосунку
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    # 3. КОПІЮВАННЯ АРТЕФАКТУ (ФАЙЛ БЕРЕТЬСЯ З BUILD-СЕРЕДОВИЩА)
+    - name: Copy JAR artifact to server
+      ansible.builtin.copy:
+        src: target/{{ app_jar_name }}
+        dest: "{{ app_dir }}/{{ app_jar_name }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    # 4. Налаштування служби systemd
+    - name: Configure and enable systemd service for Java application
+      ansible.builtin.template:
+        src: templates/java-app.service.j2
+        dest: /etc/systemd/system/java-app.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify:
+        - Restart Java Service
+        - Reload Systemd
+
+    # 5. Налаштування Nginx Reverse Proxy
+    - name: Configure Nginx reverse proxy
+      ansible.builtin.template:
+        src: templates/nginx-reverse-proxy.conf.j2
+        dest: "{{ nginx_conf_path }}"
+      notify:
+        - Reload Nginx
+
+    # 6. Включення конфігурації Nginx
+    - name: Ensure Nginx configuration is enabled
+      ansible.builtin.file:
+        src: "{{ nginx_conf_path }}"
+        dest: "{{ nginx_link_path }}"
+        state: link
+      notify:
+        - Reload Nginx
+
+    # 7. Вимкнення дефолтної конфігурації Nginx
+    - name: Disable default Nginx site (якщо існує)
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify:
+        - Reload Nginx
+
+    # 8. Забезпечення запуску служби Java (на випадок першого деплою)
+    - name: Ensure Java service is running and enabled
+      ansible.builtin.systemd_service:
+        name: java-app
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload Systemd
+      ansible.builtin.systemd_service:
+        name: systemd-daemon
+        state: reloaded
+
+    - name: Restart Java Service
+      ansible.builtin.systemd_service:
+        name: java-app
+        state: restarted
+
+    - name: Reload Nginx
+      ansible.builtin.systemd_service:
+        name: nginx
+        state: reloaded

@@ -1,0 +1,14 @@
+[Unit]
+Description=Java Spring Boot Application
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/java-app
+ExecStart=/usr/bin/java -jar /opt/java-app/{{ app_jar_name }}
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
