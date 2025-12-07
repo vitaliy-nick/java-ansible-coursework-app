@@ -29,7 +29,7 @@
     # 3. КОПІЮВАННЯ АРТЕФАКТУ (ФАЙЛ БЕРЕТЬСЯ З BUILD-СЕРЕДОВИЩА)
     - name: Copy JAR artifact to server
       ansible.builtin.copy:
-        src: target/{{ app_jar_name }}
+        src: ../target/{{ app_jar_name }}
         dest: "{{ app_dir }}/{{ app_jar_name }}"
         owner: pavlus
         group: pavlus
