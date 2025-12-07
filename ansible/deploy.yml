@@ -22,8 +22,8 @@
       ansible.builtin.file:
         path: "{{ app_dir }}"
         state: directory
-        owner: ubuntu
-        group: ubuntu
+        owner: pavlus
+        group: pavlus
         mode: '0755'
 
     # 3. КОПІЮВАННЯ АРТЕФАКТУ (ФАЙЛ БЕРЕТЬСЯ З BUILD-СЕРЕДОВИЩА)
@@ -31,8 +31,8 @@
       ansible.builtin.copy:
         src: target/{{ app_jar_name }}
         dest: "{{ app_dir }}/{{ app_jar_name }}"
-        owner: ubuntu
-        group: ubuntu
+        owner: pavlus
+        group: pavlus
         mode: '0644'
 
     # 4. Налаштування служби systemd
