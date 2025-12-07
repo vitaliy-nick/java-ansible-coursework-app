@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven (CI Stage: створення JAR)
+      - name: Build with Maven (CI Stage: create JAR)
         run: mvn -B package --file pom.xml -DskipTests
 
       - name: Install Ansible
