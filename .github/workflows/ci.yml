@@ -42,16 +42,21 @@ jobs:
           echo "[web]" > inventory
           echo "${{ env.TARGET_HOST }} ansible_user=${{ env.TARGET_USER }}" >> inventory
 
-          # 2. Копіювання Playbook, шаблонів ТА АРТЕФАКТУ у робочий каталог
+          # 2. Копіювання Playbook, шаблонів та АРТЕФАКТУ у робочий каталог
           mkdir ansible_temp
+          
           # Копіювання файлів конфігурації Ansible
           cp -r ansible/templates ./ansible_temp/templates
           cp ansible/deploy.yml ./ansible_temp/deploy.yml
 
-          cp target/${{ env.APP_JAR_NAME }} ansible_temp/target/${{ env.APP_JAR_NAME }}
+          # !!! ВИПРАВЛЕНО !!!: Копіювання JAR-файлу в робочий простір Ansible
+          # Файл береться з target/ і кладеться в ansible_temp/
+          cp target/${{ env.APP_JAR_NAME }} ansible_temp/${{ env.APP_JAR_NAME }}
 
           # 3. Запуск Playbook з передачею назви JAR-файлу як змінної
+          # ПЕРЕХІД В КАТАЛОГ ДЕ ЛЕЖИТЬ PLAYBOOK
           cd ansible_temp
+          
           ansible-playbook \
           -i ../inventory \
           deploy.yml \
