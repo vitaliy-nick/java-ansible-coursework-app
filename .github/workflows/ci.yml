@@ -25,18 +25,18 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven (CI Stage: create JAR)
+      - name: Build with Maven
         run: mvn -B package --file pom.xml -DskipTests
 
       - name: Install Ansible
         run: pip install ansible
 
-      - name: Configure SSH private key (для доступу до VM)
+      - name: Configure SSH private key
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Run Ansible Deploy (CD Stage: розгортання)
+      - name: Run Ansible Deploy
         run: |
           # 1. Створення інвенторі-файлу динамічно
           echo "[web]" > inventory
@@ -44,19 +44,18 @@ jobs:
 
           # 2. Копіювання Playbook, шаблонів та АРТЕФАКТУ у робочий каталог
           mkdir ansible_temp
-          
+
           # Копіювання файлів конфігурації Ansible
           cp -r ansible/templates ./ansible_temp/templates
           cp ansible/deploy.yml ./ansible_temp/deploy.yml
 
-          # !!! ВИПРАВЛЕНО !!!: Копіювання JAR-файлу в робочий простір Ansible
           # Файл береться з target/ і кладеться в ansible_temp/
           cp target/${{ env.APP_JAR_NAME }} ansible_temp/${{ env.APP_JAR_NAME }}
 
           # 3. Запуск Playbook з передачею назви JAR-файлу як змінної
           # ПЕРЕХІД В КАТАЛОГ ДЕ ЛЕЖИТЬ PLAYBOOK
           cd ansible_temp
-          
+
           ansible-playbook \
           -i ../inventory \
           deploy.yml \
