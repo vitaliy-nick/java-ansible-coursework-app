@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       JAVA_VERSION: '17'
       APP_JAR_NAME: 'java-app-0.0.1-SNAPSHOT.jar'
