@@ -82,12 +82,11 @@
   handlers:
     - name: Reload Systemd
       ansible.builtin.systemd_service:
-        name: systemd-daemon
-        state: reloaded
+        daemon-reload: yes
 
     - name: Restart Java Service
       ansible.builtin.systemd_service:
-        name: java-app
+        name: java-app.service
         state: restarted
 
     - name: Reload Nginx
