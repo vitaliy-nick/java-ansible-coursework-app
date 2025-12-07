@@ -12,7 +12,7 @@ jobs:
       JAVA_VERSION: '17'
       APP_JAR_NAME: 'java-app-0.0.1-SNAPSHOT.jar'
       TARGET_HOST: '192.168.49.1'
-      TARGET_USER: 'ubuntu'
+      TARGET_USER: 'pavlus'
 
     steps:
       - name: Checkout repository
