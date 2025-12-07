@@ -22,8 +22,8 @@
       ansible.builtin.file:
         path: "{{ app_dir }}"
         state: directory
-        owner: user
-        group: user
+        owner: pavlus
+        group: pavlus
         mode: '0755'
 
     # 3. КОПІЮВАННЯ АРТЕФАКТУ (ФАЙЛ БЕРЕТЬСЯ З BUILD-СЕРЕДОВИЩА)
