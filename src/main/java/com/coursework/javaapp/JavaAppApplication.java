@@ -18,6 +18,6 @@ public class JavaAppApplication {
     // Простий REST-контролер для тестування (як у Розділі 4)
     @GetMapping("/api/status")
     public String getStatus() {
-        return "Success update! Java Application is running! Version 0.0.1";
+        return "Success update! Java Application is running! Version 10";
     }
 }
